@@ -4,6 +4,10 @@
 - när Agnes skickat en högupplöst bild på 1 kort:
   fixa snygg bakgrund
 
+- fixa lokal gitignore
+
+- refaktorisera: undvik globala variabler.
+
 - try enabling selecting a piece, and instantly 
   moving/drawing it to the left when selecting 
   it, otherwise to the right
@@ -14,8 +18,6 @@
   the drawing of it. The rotated piece's top-left 
   corner should be where the top-left corner was 
   previously.
-
-- refaktorisera: undvik globala variabler.
 
 - later: start position for pieces when CHOSEN: (2,2)
 
