@@ -6,10 +6,10 @@ class Piece():
     def __init__(self, piece: list[list[int]], color: str):
         self.piece = piece
         self.color = color
-        self.faded_color = tuple([value/2 for value in data.colors.colors[color]])
+        self.faded_color = tuple([0.90 * value for value in data.colors.colors[color]])
         self.is_put = False
         self.is_selected = False
-        self.position = (-1, -1)
+        self.position = (2, 1)
 
     def width(self):
         return len(self.piece[0])
