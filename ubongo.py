@@ -1,6 +1,8 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import data.puzzles
-import colors
+import data.colors as colors
 pygame.init()
 
 # Creating window
@@ -18,9 +20,8 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 55)
 
 # Load images
-background = pygame.image.load("img/flames/3_wip3.png")
-background = pygame.transform.scale(background, (screen_width, screen_height))
-
+# background = pygame.image.load("img/flames/4_black2.png")
+# background = pygame.transform.scale(background, (screen_width, screen_height))
 board_square = pygame.image.load("img/board_square/1.jpg")
 board_square = pygame.image.load("img/board_square/2_square.jfif")
 board_square = pygame.transform.scale(board_square, (ss, ss))
@@ -50,29 +51,67 @@ def draw_board(puzzle):
         pygame.draw.line(gameWindow, colors.black, (x, y0), (x, y1), 1)
 
 def draw_pieces(puzzle):
-    # TODO: think about opacity...
-    for counter, piece in enumerate(puzzle.pieces):
-        piece_x_space = 230
-        piece_y_space = 230
-        scaling = 0.45
-        if counter < 2:
-            top_left = (vertical_line + 0.7*dfb, dfb + counter * piece_y_space)
-        else:
-            top_left = (vertical_line + 0.7*dfb + piece_x_space, dfb + (counter - 2) * piece_y_space)
+    draw_pieces_to_the_right(puzzle)
+    draw_put_pieces(puzzle)
+    draw_selected_piece(puzzle)
 
-        for i in range(piece.height()):
-            for j in range(piece.width()):
-                x = top_left[0] + j * scaling * ss
-                y = top_left[1] + i * scaling * ss
-                if piece.piece[i][j]:
-                    rect = [x, y, scaling * ss, scaling * ss]
-                    pygame.draw.rect(gameWindow, colors.colors[piece.color], rect)
+def draw_pieces_to_the_right(puzzle, one_column=True):
+    """Draw the pieces that are not put or selected to the right."""
+    for counter, piece in enumerate(puzzle.pieces):
+        if not piece.is_put and not piece.is_selected:
+            # Depending on if 1 or 2 columns, define top_left and square size.
+            if one_column:
+                piece_y_space = 150
+                scaling = 0.40
+                top_left = (vertical_line + 0.7*dfb, 0.7*dfb + counter * piece_y_space)
+            else: # 2 columns:
+                piece_x_space = 230
+                piece_y_space = 230
+                scaling = 0.45
+                if counter < 2:
+                    top_left = (vertical_line + 0.7*dfb, dfb + counter * piece_y_space)
+                else:
+                    top_left = (vertical_line + 0.7*dfb + piece_x_space, dfb + (counter - 2) * piece_y_space)
+
+            # Draw the piece.
+            for i in range(piece.height()):
+                for j in range(piece.width()):
+                    x = top_left[0] + j * scaling * ss
+                    y = top_left[1] + i * scaling * ss
+                    if piece.piece[i][j]:
+                        rect = [x, y, scaling * ss, scaling * ss]
+                        pygame.draw.rect(gameWindow, colors.colors[piece.color], rect)
+
+def draw_put_pieces(puzzle):
+    """Draw the pieces that are put in the puzzle."""
+    for piece in (puzzle.pieces):
+        if piece.is_put:
+            for i in range(piece.height()):
+                for j in range(piece.width()):
+                    x = piece.position[0] + j * ss
+                    y = piece.position[1] + i * ss
+                    if piece.piece[i][j]:
+                        rect = [x, y, ss, ss]
+                        pygame.draw.rect(gameWindow, colors.colors[piece.color], rect)
+
+def draw_selected_piece(puzzle):
+    """Draw the piece that is selected, if any, with its faded color in the puzzle."""
+    for piece in (puzzle.pieces):
+        if piece.is_selected:
+            for i in range(piece.height()):
+                for j in range(piece.width()):
+                    x = piece.position[0] + j * ss
+                    y = piece.position[1] + i * ss
+                    if piece.piece[i][j]:
+                        rect = [x, y, ss, ss]
+                        pygame.draw.rect(gameWindow, piece.faded_color, rect)
 
 # Game Loop
 def gameloop():
     exit_game = False
-    x_pos = 200
-    y_pos = 200
+    x_pos = dfb + 2 * ss
+    y_pos = dfb + 1 * ss
+    selected_piece = len(puzzle.pieces)
     fps = 10
     while not exit_game:
         dx = 0
@@ -82,10 +121,11 @@ def gameloop():
                 exit_game = True
 
             if event.type == pygame.KEYDOWN:
+
                 if event.key == pygame.K_RIGHT:
                     dx = ss
                     dy = 0
-
+                    
                 if event.key == pygame.K_LEFT:
                     dx = - ss
                     dy = 0
@@ -99,26 +139,42 @@ def gameloop():
                     dx = 0
 
                 if event.key == pygame.K_RETURN:
-                    # TODO
+                    print("ENTER")
+                    # TODO: try to put the piece.
                     pass
 
                 if event.key == pygame.K_TAB:
-                    # TODO
-                    pass
-
+                    # Deselect previous piece.
+                    if selected_piece != len(puzzle.pieces):
+                        puzzle.pieces[selected_piece].is_selected = False
+                    
+                    # Rotate selected_piece
+                    selected_piece += 1
+                    if selected_piece > len(puzzle.pieces):
+                        selected_piece = 0
+                    
+                    # Select piece
+                    if selected_piece != len(puzzle.pieces):
+                        puzzle.pieces[selected_piece].is_selected = True
+                        x_pos = dfb + 2 * ss
+                        y_pos = dfb + 1 * ss
+    
         x_pos = x_pos + dx
         y_pos = y_pos + dy
 
+        if x_pos < 0 or x_pos > screen_width - 20 or y_pos < 50 or y_pos > screen_height - 20:
+            x_pos = x_pos - dx
+            y_pos = y_pos - dy
+            # TODO: limit the position to within the puzzle.
+        
+        if selected_piece != len(puzzle.pieces):
+            puzzle.pieces[selected_piece].position = (x_pos, y_pos)
+
         gameWindow.fill(colors.black)
-        #gameWindow.blit(background, background.get_rect()) # TODO: wait for Agnes to send background
-        pygame.draw.rect(gameWindow, colors.blue, [x_pos, y_pos, ss, ss])
+        # gameWindow.blit(background, background.get_rect())
         pygame.draw.line(gameWindow, colors.white, (vertical_line,20), (vertical_line,screen_height-20), 2)
         draw_board(puzzle)
         draw_pieces(puzzle)
-
-        if x_pos<0 or x_pos>screen_width-20 or y_pos<50 or y_pos>screen_height-20:
-            x_pos = 50
-            y_pos = 50
 
         pygame.display.update()
         clock.tick(fps)
