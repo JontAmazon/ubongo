@@ -106,6 +106,17 @@ def draw_selected_piece(puzzle):
                         rect = [x, y, ss, ss]
                         pygame.draw.rect(gameWindow, piece.faded_color, rect)
 
+def draw_available_squares(puzzle):
+    for i in range(puzzle.height):
+        for j in range(puzzle.width):
+            x = dfb + j * ss
+            y = dfb + i * ss
+            if puzzle.available_squares[i][j]:
+                rect = [x, y, ss, ss]
+                pygame.draw.rect(gameWindow, colors.colors["red"], rect)
+
+
+
 # Game Loop
 def gameloop():
     exit_game = False
@@ -138,7 +149,8 @@ def gameloop():
                     dy = ss
                     dx = 0
 
-                if event.key == pygame.K_TAB:
+                if event.key == pygame.K_SPACE:
+                    print("SELECT NEW PIECE")
                     # Deselect previous piece.
                     if selected_piece != len(puzzle.pieces):
                         puzzle.pieces[selected_piece].is_selected = False
@@ -154,15 +166,28 @@ def gameloop():
                         x_pos = dfb + 2 * ss
                         y_pos = dfb + 1 * ss
 
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_TAB:
                     print("ROTATE PIECE")
                     if selected_piece != len(puzzle.pieces):
                         puzzle.pieces[selected_piece].rotate()
 
                 if event.key == pygame.K_RETURN:
-                    print("ENTER")
-                    # TODO: try to put the piece.
+                    if selected_piece != len(puzzle.pieces):
+                        piece = puzzle.pieces[selected_piece]
 
+                        if piece.is_put:
+                            print("REMOVE PIECE")
+                            piece.is_put = False
+                            # TODO: remove piece from puzzle's available_squares
+
+                        else:
+                            print("PUT PIECE")
+                            # TODO: try to put piece.
+                            success = puzzle.put_piece(piece)
+                            if not success:
+                                print("CANNOT PUT PIECE THERE!")
+                            else:
+                                piece.is_put = True
     
         x_pos = x_pos + dx
         y_pos = y_pos + dy
@@ -172,14 +197,35 @@ def gameloop():
             y_pos = y_pos - dy
             # TODO: limit the position to within the puzzle.
         
+        # Calculate square index corresponding to pixels (x_pos, y_pos)
+        # ...
+        # ... wait, no. Better if I change piece.position to integers in [0, 5] 
+        #               and change the code here in ubongo.py instead of the 
+        #               code in puzzle.py
+
+
+
         if selected_piece != len(puzzle.pieces):
-            puzzle.pieces[selected_piece].position = (x_pos, y_pos)
+            piece = puzzle.pieces[selected_piece]
+            if not piece.is_put:
+                piece.position = (x_pos, y_pos)
 
         gameWindow.fill(colors.black)
         # gameWindow.blit(background, background.get_rect())
         pygame.draw.line(gameWindow, colors.white, (vertical_line,20), (vertical_line,screen_height-20), 2)
         draw_board(puzzle)
         draw_pieces(puzzle)
+        # draw_available_squares(puzzle)
+
+        print("available squares:")
+        print(puzzle.available_squares)
+        
+        for piece in puzzle.pieces:
+            if piece.is_selected:
+                print("\n piece:")
+                print(piece.piece)
+                print(piece.position)
+        print("\n\n")
 
         pygame.display.update()
         clock.tick(fps)

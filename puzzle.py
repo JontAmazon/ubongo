@@ -12,33 +12,41 @@ class Puzzle:
         self.height = len(self.board)
         self.available_squares = deepcopy(self.board)
 
-    def put_piece(self, piece: Piece, position: tuple[int, int]) -> bool:
-        """Put a piece in the puzzle and return True if it was possible."""
-        if self.possible_move(piece, position):
-            # TODO: do a for-loop like in "possible_move", but update
-            #       the values in self.available_squares !!
+    def possible_move(self, piece: Piece) -> bool:
+        """Return True if it's possible to put the piece in the puzzle."""
+        # Check if piece is inside the puzzle.
+        pos = piece.position
+        if pos[0] < 0 \
+            or pos[1] < 0 \
+            or pos[0] + piece.width() > self.width \
+            or pos[1] + piece.height() > self.height:
+                print("The piece is outside of the puzzle.")
+                return False
+        # Check if position is occupied by other pieces.
+        for i in range(piece.height()):    # height, right?
+            for j in range(piece.width()): # width, right?
+                if piece[i][j]:
+                    if not self.available_squares[i + pos[0]][j + pos[1]]: # hopefully working
+                        return False
+        return True
+    
+    def put_piece(self, piece: Piece) -> bool:
+        """Put a piece in the puzzle and return True if it is possible."""
+        if self.possible_move(piece):
+            pos = piece.position
+            for i in range(piece.height()):    # height, right?
+                for j in range(piece.width()): # width, right?
+                    if piece[i][j]:
+                        self.available_squares[i + pos[0]][j + pos[1]] = 0
             piece.is_put = True
             return True
         return False
 
-    def possible_move(self, piece: Piece, position: tuple[int, int]) -> bool:
-        # Check if piece is inside the puzzle.
-        if position[0] < 0 \
-            or position[1] < 0 \
-            or position[0] + piece.width > self.width \
-            or position[1] + piece.height > self.height:
-                print("The piece is outside of the puzzle.")
-                return False
-        
-        # Check if position is occupied by other pieces.
-        for i in range(piece.height):    # height, right?
-            for j in range(piece.width): # width, right?
-                if piece[i][j]:
-                    if not self.available_squares[i + position[0]][j + position[1]]: # hopefully working
-                        return False
-        return True
-
-
+    def remove_piece(self, piece: Piece):
+        """Remove the piece from the puzzle."""
+        piece.is_put = False
+        # TODO
+        pass
 
 
 
