@@ -138,11 +138,6 @@ def gameloop():
                     dy = ss
                     dx = 0
 
-                if event.key == pygame.K_RETURN:
-                    print("ENTER")
-                    # TODO: try to put the piece.
-                    pass
-
                 if event.key == pygame.K_TAB:
                     # Deselect previous piece.
                     if selected_piece != len(puzzle.pieces):
@@ -158,6 +153,16 @@ def gameloop():
                         puzzle.pieces[selected_piece].is_selected = True
                         x_pos = dfb + 2 * ss
                         y_pos = dfb + 1 * ss
+
+                if event.key == pygame.K_SPACE:
+                    print("ROTATE PIECE")
+                    if selected_piece != len(puzzle.pieces):
+                        puzzle.pieces[selected_piece].rotate()
+
+                if event.key == pygame.K_RETURN:
+                    print("ENTER")
+                    # TODO: try to put the piece.
+
     
         x_pos = x_pos + dx
         y_pos = y_pos + dy
