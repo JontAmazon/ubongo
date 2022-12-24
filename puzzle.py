@@ -23,10 +23,10 @@ class Puzzle:
                 print("The piece is outside of the puzzle.")
                 return False
         # Check if position is occupied by other pieces.
-        for i in range(piece.height()):    # height, right?
-            for j in range(piece.width()): # width, right?
-                if piece[i][j]:
-                    if not self.available_squares[i + pos[0]][j + pos[1]]: # hopefully working
+        for i in range(piece.height()):
+            for j in range(piece.width()):
+                if piece.piece[i][j]:
+                    if not self.available_squares[i + pos[1]][j + pos[0]]:
                         return False
         return True
     
@@ -34,19 +34,23 @@ class Puzzle:
         """Put a piece in the puzzle and return True if it is possible."""
         if self.possible_move(piece):
             pos = piece.position
-            for i in range(piece.height()):    # height, right?
-                for j in range(piece.width()): # width, right?
-                    if piece[i][j]:
-                        self.available_squares[i + pos[0]][j + pos[1]] = 0
+            for i in range(piece.height()):
+                for j in range(piece.width()):
+                    if piece.piece[i][j]:
+                        self.available_squares[i + pos[1]][j + pos[0]] = 0
             piece.is_put = True
             return True
         return False
 
     def remove_piece(self, piece: Piece):
         """Remove the piece from the puzzle."""
+        assert piece.is_put
         piece.is_put = False
-        # TODO
-        pass
+        pos = piece.position
+        for i in range(piece.height()):
+            for j in range(piece.width()):
+                if piece.piece[i][j]:
+                    self.available_squares[i + pos[1]][j + pos[0]] = 1
 
 
 
